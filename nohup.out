@@ -1,0 +1,52 @@
+[W 13:34:33.691 NotebookApp] Unrecognized JSON config file version, assuming version 1
+[I 13:34:34.100 NotebookApp] [nb_conda_kernels] enabled, 3 kernels found
+[I 13:34:34.397 NotebookApp] ✓ nbpresent HTML export ENABLED
+[W 13:34:34.397 NotebookApp] ✗ nbpresent PDF export DISABLED: No module named nbbrowserpdf.exporters.pdf
+[I 13:34:34.399 NotebookApp] [nb_conda] enabled
+[I 13:34:34.450 NotebookApp] [nb_anacondacloud] enabled
+[I 13:34:34.470 NotebookApp] Serving notebooks from local directory: /home/ubuntu/githubRepos/handson_ML_with_SKL_and_TF
+[I 13:34:34.470 NotebookApp] 0 active kernels 
+[I 13:34:34.470 NotebookApp] The Jupyter Notebook is running at: https://[all ip addresses on your system]:8888/
+[I 13:34:34.470 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[I 13:35:09.296 NotebookApp] 302 GET / (73.158.18.147) 0.44ms
+[W 13:35:18.187 NotebookApp] 404 GET /nbextensions/nb_anacondacloud/main.js?v=20160928133434 (73.158.18.147) 6.96ms referer=https://52.53.158.144:8888/notebooks/Ch%202%20End-to-end%20ML%20project%20py35.ipynb
+[I 13:35:19.762 NotebookApp] Kernel started: f5071d8f-6b7e-4917-9994-a1a5aece0e52
+[W 13:35:19.768 NotebookApp] 404 GET /kernelspecs/Python%20[py35]/logo-64x64.png (73.158.18.147) 2.50ms referer=https://52.53.158.144:8888/notebooks/Ch%202%20End-to-end%20ML%20project%20py35.ipynb
+[I 13:37:20.435 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 13:39:20.421 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 13:40:33.451 NotebookApp] Interrupted...
+[I 13:40:33.451 NotebookApp] Shutting down kernels
+[I 13:40:34.053 NotebookApp] Kernel shutdown: f5071d8f-6b7e-4917-9994-a1a5aece0e52
+[W 13:41:07.831 NotebookApp] Unrecognized JSON config file version, assuming version 1
+[I 13:41:08.240 NotebookApp] [nb_conda_kernels] enabled, 3 kernels found
+[I 13:41:08.536 NotebookApp] ✓ nbpresent HTML export ENABLED
+[W 13:41:08.537 NotebookApp] ✗ nbpresent PDF export DISABLED: No module named nbbrowserpdf.exporters.pdf
+[I 13:41:08.540 NotebookApp] [nb_conda] enabled
+[I 13:41:08.589 NotebookApp] [nb_anacondacloud] enabled
+[I 13:41:08.607 NotebookApp] Serving notebooks from local directory: /home/ubuntu/githubRepos/handson_ML_with_SKL_and_TF
+[I 13:41:08.607 NotebookApp] 0 active kernels 
+[I 13:41:08.607 NotebookApp] The Jupyter Notebook is running at: https://[all ip addresses on your system]:8888/
+[I 13:41:08.607 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+[I 13:41:40.678 NotebookApp] 302 GET / (73.158.18.147) 0.41ms
+[W 13:41:48.252 NotebookApp] 404 GET /nbextensions/nb_anacondacloud/main.js?v=20160928134108 (73.158.18.147) 6.90ms referer=https://52.53.158.144:8888/notebooks/Ch%202%20End-to-end%20ML%20project%20py35.ipynb
+[I 13:41:50.643 NotebookApp] Kernel started: 8d99d5d5-9e5f-4786-815f-d67717490e3b
+[W 13:41:50.650 NotebookApp] 404 GET /kernelspecs/Python%20[py35]/logo-64x64.png (73.158.18.147) 2.10ms referer=https://52.53.158.144:8888/notebooks/Ch%202%20End-to-end%20ML%20project%20py35.ipynb
+[I 13:45:51.294 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 13:47:50.842 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 13:49:51.256 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 13:51:51.294 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[W 13:53:23.818 NotebookApp] Notebook end_to_end_project.ipynb is not trusted
+[W 13:53:23.947 NotebookApp] 404 GET /nbextensions/nb_anacondacloud/main.js?v=20160928134108 (73.158.18.147) 1.47ms referer=https://52.53.158.144:8888/notebooks/end_to_end_project.ipynb
+[I 13:53:26.875 NotebookApp] Kernel started: 346d1878-aed0-4741-ab1f-2cc0c99b0e11
+[W 13:53:26.881 NotebookApp] 404 GET /kernelspecs/Python%20[Root]/logo-64x64.png (73.158.18.147) 1.82ms referer=https://52.53.158.144:8888/notebooks/end_to_end_project.ipynb
+[I 13:53:51.266 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 13:55:51.366 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 13:57:51.324 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 13:58:39.689 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 13:59:19.694 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 14:01:51.262 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 14:02:26.473 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 14:03:51.164 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 14:04:53.729 NotebookApp] Saving file at /Ch 2 End-to-end ML project py35.ipynb
+[I 14:04:59.930 NotebookApp] Saving file at /end_to_end_project.ipynb
+[W 14:04:59.932 NotebookApp] Saving untrusted notebook end_to_end_project.ipynb
