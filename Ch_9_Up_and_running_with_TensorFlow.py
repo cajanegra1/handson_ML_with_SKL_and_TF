@@ -89,27 +89,111 @@ print(theta_value)
  [ -4.26701456e-01]
  [ -4.40539479e-01]]
 
-# Gradient Descent
+# Gradient Descent: manually computing gradients.
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+scaled_housing_data = scaler.fit_transform(housing.data)
+# => borrowed from page 119.
+scaled_housing_data_plus_bias = np.c_[np.ones((m, 1)), scaled_housing_data]
+print(scaled_housing_data_plus_bias.mean(axis=0))
+
+tf.reset_default_graph()
 
 n_epochs = 1000
 learning_rate = 0.01
 
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-scaled_housing_data_plus_bias = scaler.fit_transform(housing_data_plus_bias)
-# => borrowed from page 119.
-
 X = tf.constant(scaled_housing_data_plus_bias, dtype=tf.float32, name="X")
 y = tf.constant(housing.target.reshape(-1, 1), dtype=tf.float32, name="y")
-theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0), name="theta")
+theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0, seed=42), name="theta")
 y_pred = tf.matmul(X, theta, name="predictions")
 error = y_pred - y
 mse = tf.reduce_mean(tf.square(error), name="mse")
-# gradients = 2/m * tf.matmul(tf.transpose(X), error)
-# alternative using TF's autodiff:
-# gradients = tf.gradients(mse, [theta])[0]
-# training_op = tf.assign(theta, theta - learning_rate * gradients)
-# alternative using optimizer:
+gradients = 2/m * tf.matmul(tf.transpose(X), error)
+training_op = tf.assign(theta, theta - learning_rate * gradients)
+
+init = tf.initialize_all_variables()
+
+with tf.Session() as sess:
+    sess.run(init)
+
+    for epoch in range(n_epochs):
+        if epoch % 100 == 0:
+            print("Epoch", epoch, "MSE =", mse.eval())
+        sess.run(training_op)
+
+    best_theta = theta.eval()
+
+print("Best theta:")
+print(best_theta)
+[[ 0.90454292]
+ [ 0.35481548]
+ [ 0.59063649]
+ [ 0.51156354]
+ [-0.04808879]
+ [ 0.26202965]
+ [-0.62795925]
+ [-0.77138448]
+ [-0.32755637]]
+
+# => had to run it manually due to indentation problems.
+# => actually, was able to fix it by being careful with indentations in white lines.
+# => however, it prints the thetas, as opposed to the MSEs; couldn't fix it.
+
+# using autodiff
+# Same as above except for the gradients = ... line.
+# basically TF is calculating the gradients for me.
+tf.reset_default_graph()
+
+n_epochs = 1000
+learning_rate = 0.01
+
+X = tf.constant(scaled_housing_data_plus_bias, dtype=tf.float32, name="X")
+y = tf.constant(housing.target.reshape(-1, 1), dtype=tf.float32, name="y")
+theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0, seed=42), name="theta")
+y_pred = tf.matmul(X, theta, name="predictions")
+error = y_pred - y
+mse = tf.reduce_mean(tf.square(error), name="mse")
+gradients = tf.gradients(mse, [theta])[0]
+training_op = tf.assign(theta, theta - learning_rate * gradients)
+
+init = tf.initialize_all_variables()
+
+with tf.Session() as sess:
+    sess.run(init)
+
+    for epoch in range(n_epochs):
+        if epoch % 100 == 0:
+            print("Epoch", epoch, "MSE =", mse.eval())
+        sess.run(training_op)
+
+    best_theta = theta.eval()
+
+print("Best theta:")
+print(best_theta)
+[[  2.06855249e+00]
+ [  7.74078071e-01]
+ [  1.31192416e-01]
+ [ -1.17845096e-01]
+ [  1.64778158e-01]
+ [  7.44091696e-04]
+ [ -3.91945094e-02]
+ [ -8.61356437e-01]
+ [ -8.23479593e-01]]
+
+# using an optimizer (GradientDescentOptimizer)
+# replace the gradients = ... and training_op = ... lines
+tf.reset_default_graph()
+
+n_epochs = 1000
+learning_rate = 0.01
+
+X = tf.constant(scaled_housing_data_plus_bias, dtype=tf.float32, name="X")
+y = tf.constant(housing.target.reshape(-1, 1), dtype=tf.float32, name="y")
+theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0, seed=42), name="theta")
+y_pred = tf.matmul(X, theta, name="predictions")
+error = y_pred - y
+mse = tf.reduce_mean(tf.square(error), name="mse")
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
 training_op = optimizer.minimize(mse)
 
@@ -125,10 +209,23 @@ with tf.Session() as sess:
 
     best_theta = theta.eval()
 
-# => had to run it manually due to indentation problems.
-# => actually, was able to fix it by being careful with indentations in white lines.
+# => for some reason this one DOES print the MSEs!
+print("Best theta:")
+print(best_theta)
+[[  2.06855249e+00]
+ [  7.74078071e-01]
+ [  1.31192416e-01]
+ [ -1.17845096e-01]
+ [  1.64778158e-01]
+ [  7.44091696e-04]
+ [ -3.91945094e-02]
+ [ -8.61356437e-01]
+ [ -8.23479593e-01]]
 
 # mini-batches and placeholders.
+# placeholder nodes are special because they don’t actually perform any computation,
+# they just output the data you tell them to output at runtime. If you don’t specify
+# a value at runtime for a placeholder, you get an exception.
 
 # testing placeholders.
 A = tf.placeholder(tf.float32, shape=(None, 3))
@@ -140,33 +237,73 @@ print(B_val_1)
 print(B_val_2)
 
 # now, linear regression with mini-batch gradient descent.
+tf.reset_default_graph()
+
 n_epochs = 1000
 learning_rate = 0.01
 
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-scaled_housing_data_plus_bias = scaler.fit_transform(housing_data_plus_bias)
-# => borrowed from page 119.
-
 X = tf.placeholder(tf.float32, shape=(None, n + 1), name="X")
 y = tf.placeholder(tf.float32, shape=(None, 1), name="y")
-batch_size = 100
-n_batches = int(np.ceil(m / batch_size))
-xxxx
-
-theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0), name="theta")
+theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0, seed=42), name="theta")
 y_pred = tf.matmul(X, theta, name="predictions")
 error = y_pred - y
 mse = tf.reduce_mean(tf.square(error), name="mse")
-# gradients = 2/m * tf.matmul(tf.transpose(X), error)
-# alternative using TF's autodiff:
-# gradients = tf.gradients(mse, [theta])[0]
-# training_op = tf.assign(theta, theta - learning_rate * gradients)
-# alternative using optimizer:
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
 training_op = optimizer.minimize(mse)
 
 init = tf.initialize_all_variables()
+
+import numpy.random as rnd
+def fetch_batch(epoch, batch_index, batch_size):
+    rnd.seed(epoch * n_batches + batch_index)
+    indices = rnd.randint(m, size=batch_size)
+    X_batch = scaled_housing_data_plus_bias[indices]
+    y_batch = housing.target.reshape(-1, 1)[indices]
+    return X_batch, y_batch
+
+n_epochs = 10
+batch_size = 100
+n_batches = int(np.ceil(m / batch_size))
+
+with tf.Session() as sess:
+    sess.run(init)
+
+    for epoch in range(n_epochs):
+        for batch_index in range(n_batches):
+            X_batch, y_batch = fetch_batch(epoch, batch_index, batch_size)
+            sess.run(training_op, feed_dict={X: X_batch, y: y_batch})
+
+    best_theta = theta.eval()
+
+print("Best theta:")
+print(best_theta)
+[[ 2.06697559]
+ [ 0.82894456]
+ [ 0.11803052]
+ [-0.23456885]
+ [ 0.29808956]
+ [ 0.00392114]
+ [-0.00724683]
+ [-0.90761697]
+ [-0.88751072]]
+
+# Saving and restoring models
+tf.reset_default_graph()
+
+n_epochs = 1000
+learning_rate = 0.01
+
+X = tf.constant(scaled_housing_data_plus_bias, dtype=tf.float32, name="X")
+y = tf.constant(housing.target.reshape(-1, 1), dtype=tf.float32, name="y")
+theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0, seed=42), name="theta")
+y_pred = tf.matmul(X, theta, name="predictions")
+error = y_pred - y
+mse = tf.reduce_mean(tf.square(error), name="mse")
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+training_op = optimizer.minimize(mse)
+
+init = tf.initialize_all_variables()
+saver = tf.train.Saver()
 
 with tf.Session() as sess:
     sess.run(init)
@@ -174,6 +311,20 @@ with tf.Session() as sess:
     for epoch in range(n_epochs):
         if epoch % 100 == 0:
             print("Epoch", epoch, "MSE =", mse.eval())
+            save_path = saver.save(sess, "my_model.ckpt")
         sess.run(training_op)
 
     best_theta = theta.eval()
+    save_path = saver.save(sess, "my_model_final.ckpt")
+
+print("Best theta:")
+print(best_theta)
+[[  2.06855249e+00]
+ [  7.74078071e-01]
+ [  1.31192416e-01]
+ [ -1.17845096e-01]
+ [  1.64778158e-01]
+ [  7.44091696e-04]
+ [ -3.91945094e-02]
+ [ -8.61356437e-01]
+ [ -8.23479593e-01]]
