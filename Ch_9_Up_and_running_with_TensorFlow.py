@@ -28,17 +28,20 @@ print(result)
 # 42
 sess.close()
 
-# using with block, no need to close.
+# using "with block", no need to close.
 with tf.Session() as sess:
     x.initializer.run()
     y.initializer.run()
     result = f.eval()
+    print(result)
+# "with block" is similar to a try-catch.
 
 # easier initialization.
 init = tf.initialize_all_variables() # prepare an init node
 with tf.Session() as sess:
     init.run() # actually initialize all the variables
     result = f.eval()
+    print(result)
 
 # x is calculated twice, when needed for y and when needed for z.
 w = tf.constant(3)
@@ -233,6 +236,7 @@ B = A+5
 with tf.Session() as sess:
     B_val_1 = B.eval(feed_dict={A: [[1, 2, 3]]})
     B_val_2 = B.eval(feed_dict={A: [[4, 5, 6], [7, 8, 9]]})
+
 print(B_val_1)
 print(B_val_2)
 
@@ -328,3 +332,76 @@ print(best_theta)
  [ -3.91945094e-02]
  [ -8.61356437e-01]
  [ -8.23479593e-01]]
+
+# Visualizing the graph and training curves using TensorBoard
+
+tf.reset_default_graph()
+
+from datetime import datetime
+
+# need to create a log dir for TensorBoard.
+now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+root_logdir = "tf_logs"
+logdir = "{}/run-{}/".format(root_logdir, now)
+
+n_epochs = 1000
+learning_rate = 0.01
+
+X = tf.placeholder(tf.float32, shape=(None, n + 1), name="X")
+y = tf.placeholder(tf.float32, shape=(None, 1), name="y")
+theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0, seed=42), name="theta")
+y_pred = tf.matmul(X, theta, name="predictions")
+error = y_pred - y
+mse = tf.reduce_mean(tf.square(error), name="mse")
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+training_op = optimizer.minimize(mse)
+
+init = tf.initialize_all_variables()
+
+# A summary to keep track of stats flowing through the graph.
+mse_summary = tf.scalar_summary('MSE', mse)
+summary_writer = tf.train.SummaryWriter(logdir, tf.get_default_graph())
+
+n_epochs = 10
+batch_size = 100
+n_batches = int(np.ceil(m / batch_size))
+
+with tf.Session() as sess:
+    sess.run(init)
+
+    for epoch in range(n_epochs):
+        for batch_index in range(n_batches):
+            X_batch, y_batch = fetch_batch(epoch, batch_index, batch_size)
+            # create summary every 10 batches.
+            if batch_index % 10 == 0:
+                summary_str = mse_summary.eval(feed_dict={X: X_batch, y: y_batch})
+                step = epoch * n_batches + batch_index
+                summary_writer.add_summary(summary_str, step)
+            sess.run(training_op, feed_dict={X: X_batch, y: y_batch})
+
+    best_theta = theta.eval()
+
+summary_writer.flush()
+summary_writer.close()
+print("Best theta:")
+print(best_theta)
+[[ 2.06697559]
+ [ 0.82894456]
+ [ 0.11803052]
+ [-0.23456885]
+ [ 0.29808956]
+ [ 0.00392114]
+ [-0.00724683]
+ [-0.90761697]
+ [-0.88751072]]
+
+# TensorBoard
+# had to open TCP port 6006 on instance.
+cd /home/ubuntu/githubRepos/handson_ML_with_SKL_and_TF
+# => where the tf_logs directory was created.
+tensorboard --logdir tf_logs
+# => notice it tells me an incorrect IP address to use.
+http://52.53.158.144:6006
+# => chrome works well.
+ACCIDENTALLY KILLED tensorflow SCREEN, RESTART IT
+# => just did, and started python.
