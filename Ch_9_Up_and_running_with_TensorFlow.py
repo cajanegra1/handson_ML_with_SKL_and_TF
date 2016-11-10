@@ -349,7 +349,9 @@ learning_rate = 0.01
 
 X = tf.placeholder(tf.float32, shape=(None, n + 1), name="X")
 y = tf.placeholder(tf.float32, shape=(None, 1), name="y")
-theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0, seed=42), name="theta")
+# theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0, seed=42), name="theta")
+# removing the seed so that I get different initializations:
+theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0), name="theta")
 y_pred = tf.matmul(X, theta, name="predictions")
 error = y_pred - y
 mse = tf.reduce_mean(tf.square(error), name="mse")
@@ -394,6 +396,9 @@ print(best_theta)
  [-0.00724683]
  [-0.90761697]
  [-0.88751072]]
+# try to recreate the two initial directories with different
+# initializations.
+# => did that, works well, maybe report to author, maybe on GitHub?
 
 # TensorBoard
 # had to open TCP port 6006 on instance.
@@ -404,6 +409,7 @@ tensorboard --logdir tf_logs
 # => notice it tells me an incorrect IP address to use.
 http://52.53.158.144:6006
 # => chrome works well.
+# was left running within screen "tensorboard"
 
 # Using name scopes to unclutter visualization of network nodes.
 tf.reset_default_graph()
@@ -453,5 +459,66 @@ summary_writer.flush()
 summary_writer.close()
 print("Best theta:")
 print(best_theta)
-# xxxx was run, try to recreate the two initial directories with different 
-# initializations
+# looks great!
+
+# Modularity.
+
+# ugly flat code.
+tf.reset_default_graph()
+
+n_features = 3
+X = tf.placeholder(tf.float32, shape=(None, n_features), name="X")
+
+w1 = tf.Variable(tf.random_normal((n_features, 1)), name="weights1")
+w2 = tf.Variable(tf.random_normal((n_features, 1)), name="weights2")
+b1 = tf.Variable(0.0, name="bias1")
+b2 = tf.Variable(0.0, name="bias2")
+
+linear1 = tf.add(tf.matmul(X, w1), b1, name="linear1")
+linear2 = tf.add(tf.matmul(X, w2), b2, name="linear2")
+
+relu1 = tf.maximum(linear1, 0, name="relu1")
+# relu2 = tf.maximum(linear1, 0, name="relu2")  # Oops, cut&paste error! Did you spot it?
+relu2 = tf.maximum(linear2, 0, name="relu2")  # Error spotted and fixed :-D
+
+output = tf.add_n([relu1, relu2], name="output")
+
+# better, use a function to create the ReLU.
+tf.reset_default_graph()
+
+def relu(X):
+    w_shape = int(X.get_shape()[1]), 1
+    w = tf.Variable(tf.random_normal(w_shape), name="weights")
+    b = tf.Variable(0.0, name="bias")
+    linear = tf.add(tf.matmul(X, w), b, name="linear")
+    return tf.maximum(linear, 0, name="relu")
+
+n_features = 3
+X = tf.placeholder(tf.float32, shape=(None, n_features), name="X")
+relus = [relu(X) for i in range(5)]
+output = tf.add_n(relus, name="output")
+summary_writer = tf.train.SummaryWriter("tf_logs/relu1", tf.get_default_graph())
+summary_writer.close()
+
+# even better, using name scopes.
+tf.reset_default_graph()
+
+def relu(X):
+    with tf.name_scope("relu"):
+        w_shape = int(X.get_shape()[1]), 1
+        w = tf.Variable(tf.random_normal(w_shape), name="weights")
+        b = tf.Variable(0.0, name="bias")
+        linear = tf.add(tf.matmul(X, w), b, name="linear")
+        return tf.maximum(linear, 0, name="max")
+
+n_features = 3
+X = tf.placeholder(tf.float32, shape=(None, n_features), name="X")
+relus = [relu(X) for i in range(5)]
+output = tf.add_n(relus, name="output")
+
+summary_writer = tf.train.SummaryWriter("tf_logs/relu2", tf.get_default_graph())
+summary_writer.close()
+# check GRAPHS in TensorBoard.
+# beautiful.
+
+xxxx next, sharing variables.
