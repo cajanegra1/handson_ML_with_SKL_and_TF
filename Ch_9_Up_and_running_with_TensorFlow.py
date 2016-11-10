@@ -399,9 +399,59 @@ print(best_theta)
 # had to open TCP port 6006 on instance.
 cd /home/ubuntu/githubRepos/handson_ML_with_SKL_and_TF
 # => where the tf_logs directory was created.
+source activate tensorflow
 tensorboard --logdir tf_logs
 # => notice it tells me an incorrect IP address to use.
 http://52.53.158.144:6006
 # => chrome works well.
-ACCIDENTALLY KILLED tensorflow SCREEN, RESTART IT
-# => just did, and started python.
+
+# Using name scopes to unclutter visualization of network nodes.
+tf.reset_default_graph()
+
+from datetime import datetime
+now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+root_logdir = "tf_logs"
+logdir = "{}/run-{}/".format(root_logdir, now)
+
+n_epochs = 1000
+learning_rate = 0.01
+
+X = tf.placeholder(tf.float32, shape=(None, n + 1), name="X")
+y = tf.placeholder(tf.float32, shape=(None, 1), name="y")
+theta = tf.Variable(tf.random_uniform([n + 1, 1], -1.0, 1.0, seed=42), name="theta")
+y_pred = tf.matmul(X, theta, name="predictions")
+with tf.name_scope('loss') as scope:
+    error = y_pred - y
+    mse = tf.reduce_mean(tf.square(error), name="mse")
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+training_op = optimizer.minimize(mse)
+
+init = tf.initialize_all_variables()
+
+mse_summary = tf.scalar_summary('MSE', mse)
+summary_writer = tf.train.SummaryWriter(logdir, tf.get_default_graph())
+
+n_epochs = 10
+batch_size = 100
+n_batches = int(np.ceil(m / batch_size))
+
+with tf.Session() as sess:
+    sess.run(init)
+
+    for epoch in range(n_epochs):
+        for batch_index in range(n_batches):
+            X_batch, y_batch = fetch_batch(epoch, batch_index, batch_size)
+            if batch_index % 10 == 0:
+                summary_str = mse_summary.eval(feed_dict={X: X_batch, y: y_batch})
+                step = epoch * n_batches + batch_index
+                summary_writer.add_summary(summary_str, step)
+            sess.run(training_op, feed_dict={X: X_batch, y: y_batch})
+
+    best_theta = theta.eval()
+
+summary_writer.flush()
+summary_writer.close()
+print("Best theta:")
+print(best_theta)
+# xxxx was run, try to recreate the two initial directories with different 
+# initializations
