@@ -4,11 +4,14 @@
 # python
 # ...
 # source deactivate
+# => running under screen tensorflow
 
 # if using jupyter notebooks:
 # ssh -i ~/Epinomics/alvaroMBPkeypair.pem ubuntu@ec2-52-53-158-144.us-west-1.compute.amazonaws.com
+# screen -S jupyter
 # cd githubRepos/handson_ML_with_SKL_and_TF/
 # jupyter notebook
+# => was left running under screen jupyter
 # from Firefox: https://52.53.158.144:8888
 
 import tensorflow as tf
@@ -521,4 +524,100 @@ summary_writer.close()
 # check GRAPHS in TensorBoard.
 # beautiful.
 
-xxxx next, sharing variables.
+# Sharing variables.
+
+# Sharing a threshold variable the classic way, by defining it outside of the
+# relu() function then passing it as a parameter:
+
+tf.reset_default_graph()
+
+def relu(X, threshold):
+    with tf.name_scope("relu"):
+        w_shape = int(X.get_shape()[1]), 1
+        w = tf.Variable(tf.random_normal(w_shape), name="weights")
+        b = tf.Variable(0.0, name="bias")
+        linear = tf.add(tf.matmul(X, w), b, name="linear")
+        return tf.maximum(linear, threshold, name="max")
+
+threshold = tf.Variable(0.0, name="threshold")
+X = tf.placeholder(tf.float32, shape=(None, n_features), name="X")
+relus = [relu(X, threshold) for i in range(5)]
+output = tf.add_n(relus, name="output")
+
+# another option is to set the shared variable as an attribute of the relu()
+# function upon the first call, like so:
+
+tf.reset_default_graph()
+
+def relu(X):
+    with tf.name_scope("relu"):
+        if not hasattr(relu, "threshold"):
+            relu.threshold = tf.Variable(0.0, name="threshold")
+        w_shape = int(X.get_shape()[1]), 1
+        w = tf.Variable(tf.random_normal(w_shape), name="weights")
+        b = tf.Variable(0.0, name="bias")
+        linear = tf.add(tf.matmul(X, w), b, name="linear")
+        return tf.maximum(linear, relu.threshold, name="max")
+
+X = tf.placeholder(tf.float32, shape=(None, n_features), name="X")
+relus = [relu(X) for i in range(5)]
+output = tf.add_n(relus, name="output")
+
+# TensorFlow offers another option: use the get_variable() function to create
+# the shared variable if it does not exist yet, or reuse it if it already exists.
+# The desired behavior (creating or reusing) is controlled by an attribute of
+# the current variable_scope():
+
+tf.reset_default_graph()
+
+def relu(X):
+    with tf.variable_scope("relu", reuse=True):
+        threshold = tf.get_variable("threshold", shape=(), initializer=tf.constant_initializer(0.0))
+        w_shape = int(X.get_shape()[1]), 1
+        w = tf.Variable(tf.random_normal(w_shape), name="weights")
+        b = tf.Variable(0.0, name="bias")
+        linear = tf.add(tf.matmul(X, w), b, name="linear")
+        return tf.maximum(linear, threshold, name="max")
+
+X = tf.placeholder(tf.float32, shape=(None, n_features), name="X")
+with tf.variable_scope("relu"):
+    threshold = tf.get_variable("threshold", shape=(), initializer=tf.constant_initializer(0.0))
+relus = [relu(X) for i in range(5)]
+output = tf.add_n(relus, name="output")
+
+summary_writer = tf.train.SummaryWriter("tf_logs/relu6", tf.get_default_graph())
+summary_writer.close()
+
+# It is somewhat unfortunate that the threshold variable must be defined outside
+# of the relu() function, where all the rest of the ReLU code resides. To fix
+# this, the following code creates the threshold variable within the relu()
+# function upon the first call, then reuses it in subsequent calls. Now the
+# relu() function does not have to worry about name scopes or variable sharing:
+# it just calls get_variable(), which will create or reuse the threshold
+# variable (it does not need to know which is the case).
+
+tf.reset_default_graph()
+
+def relu(X):
+    with tf.variable_scope("relu"):
+        threshold = tf.get_variable("threshold", shape=(), initializer=tf.constant_initializer(0.0))
+        w_shape = int(X.get_shape()[1]), 1
+        w = tf.Variable(tf.random_normal(w_shape), name="weights")
+        b = tf.Variable(0.0, name="bias")
+        linear = tf.add(tf.matmul(X, w), b, name="linear")
+        return tf.maximum(linear, threshold, name="max")
+
+X = tf.placeholder(tf.float32, shape=(None, n_features), name="X")
+with tf.variable_scope("") as scope:
+    first_relu = relu(X)     # create the shared variable
+    scope.reuse_variables()  # then reuse it
+    relus = [first_relu] + [relu(X) for i in range(4)]
+# xxxx throws an error.
+# xxxx can I fix it?
+output = tf.add_n(relus, name="output")
+
+summary_writer = tf.train.SummaryWriter("tf_logs/relu8", tf.get_default_graph())
+summary_writer.close()
+
+# xxxx Next: go over exercises, come up with a list of TF functions and tools
+# that were used in this chapter, and try to define them by heart.
